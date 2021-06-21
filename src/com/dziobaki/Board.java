@@ -12,13 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Board extends JPanel implements KeyListener, ActionListener {
+public class Board extends JPanel implements Runnable, KeyListener, ActionListener {
 
     JLabel label;
     Player player;
+    Thread thread;
 
     Timer timer;
     int tick = 0;
+    
+    private boolean running = false;
 
     List<GameObject> gameObjects = new ArrayList<>();
 
@@ -137,9 +140,9 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        player.move();
-        updateBullets();
-        checkCollisions();
+//        player.move();
+//        updateBullets();
+//        checkCollisions();
 
         //label.setText(player.getMotionDataString());
 
@@ -173,4 +176,51 @@ public class Board extends JPanel implements KeyListener, ActionListener {
                 bulletList.remove(i);
         }
     }
+
+    @Override
+    public void run() {
+
+        start();
+
+        while(running) {
+            tick();
+            render();
+        }
+
+        stop();
+    }
+
+    private void tick() {
+
+        player.move();
+        updateBullets();
+        checkCollisions();
+
+    }
+
+    private void render() {
+    }
+
+    public synchronized void start() {
+        if (running)
+            return;
+        running = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+    
+    public synchronized  void stop() {
+        if (!running)
+            return;
+        running = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+    
+
+
 }

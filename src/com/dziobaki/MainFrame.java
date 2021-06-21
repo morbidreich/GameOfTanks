@@ -7,11 +7,13 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
 
-        add(new Board());
+        Board board = new Board();
+        add(board);
+        board.start();
 
         //basic setup stuff
 
-        setTitle("Insert game title here");
+        setTitle("GameOfTanks");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocation(200,200);
         setSize(500,500);
