@@ -1,5 +1,7 @@
 package com.dziobaki;
 
+import java.awt.*;
+
 public abstract class Vehicles extends GameObject {
 
     double hitPoints;

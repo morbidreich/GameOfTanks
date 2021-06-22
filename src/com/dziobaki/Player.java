@@ -1,6 +1,7 @@
 package com.dziobaki;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
@@ -102,5 +103,37 @@ public class Player extends Vehicles {
 
     public void setAffineTransform(AffineTransform affineTransform) {
         this.affineTransform = affineTransform;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return new Rectangle(this.getX(), this.getY(), 30, 40);
+
+    }
+
+    public void draw(Graphics g) {
+        //cast g to g2d for transformation godness
+        Graphics2D g2d = (Graphics2D) g;
+
+        //remeber correct orientation
+        AffineTransform preRotate = g2d.getTransform();
+
+
+
+        //rotate tank around main body
+        g2d.rotate(Math.toRadians(this.azimuth), this.getX() + 15, this.getY() + 20);
+        //pass AffineTransport to player object for clculating starting point of bullets as getShearX/Y
+        this.setAffineTransform(g2d.getTransform());
+        //main body
+        g.drawRect(this.getX(), this.getY(), 30, 40);
+        //turret
+        g.drawOval(this.getX()+5, this.getY()+5, 20, 20);
+        //barrel
+        g.drawRect(this.getX()+15, this.getY() - 12, 2, 18);
+
+
+
+        //return to pre transform orientation of g2d
+        g2d.setTransform(preRotate);
     }
 }

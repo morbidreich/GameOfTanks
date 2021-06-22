@@ -6,16 +6,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class Board extends JPanel implements KeyListener, ActionListener {
 
-    JLabel label;
+    JLabel label, label2, label3;
     Player player;
+    List<Enemy> enemyList;
 
     Timer timer;
     int tick = 0;
@@ -33,14 +32,31 @@ public class Board extends JPanel implements KeyListener, ActionListener {
         player = new Player(getWidth() / 2, getHeight() / 2, 10);
         add(player);
 
+        generateEnemies();
 
+
+    }
+
+    private void generateEnemies() {
+        enemyList.add(new Enemy(100, 200, 30));
+        enemyList.add(new Enemy(400, 300, 30));
+        enemyList.add(new Enemy(300, 100, 30));
     }
 
     private void setUi() {
         this.setSize(500, 500);
         addKeyListener(this);
+
         label = new JLabel("Trololo");
         add(label);
+
+        label2 = new JLabel("Diagnostics");
+        add(label2);
+
+        label3 = new JLabel("KURWA");
+        add(label3);
+
+        enemyList = new ArrayList<>();
 
         //without this panel is not able to listen to keyevents
         setFocusable(true);
@@ -50,57 +66,33 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        drawPlayer(g);
-        drawBullets(g);
+        //set antialiasing
+        Graphics2D g2d = (Graphics2D) g;
+        setAntialiasing(g2d);
+
+        player.draw(g2d);
+
+        drawBullets(g2d);
+
+        drawEnemies(g2d);
 
         repaint();
     }
 
-    //some fancy graphics methods
-
-    private void drawBullets(Graphics g) {
-        g.setColor(Color.red);
-
-
-        for (Bullet b : player.getBulletList()) {
-            g.drawOval(b.getX(), b.getY(), 1, 1);
-            g.drawOval(b.getX(), b.getY(), 2, 2);
-            g.drawOval(b.getX(), b.getY(), 3, 3);
-            g.drawOval(b.getX(), b.getY(), 4, 4);
-        }
+    private void setAntialiasing(Graphics2D g) {
+        g.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
+    private void drawEnemies(Graphics2D g2d) {
+        for (Enemy e : enemyList)
+            e.draw(g2d);
+    }
 
-    private void drawPlayer(Graphics g) {
-
-        //cast g to g2d for transformation godness
-        Graphics2D g2d = (Graphics2D) g;
-
-        //remeber correct orientation
-        AffineTransform preRotate = g2d.getTransform();
-
-
-
-        //rotate tank around main body
-        g2d.rotate(Math.toRadians(player.azimuth), player.getX() + 15, player.getY() + 20);
-        //pass AffineTransport to player object for clculating starting point of bullets as getShearX/Y
-        player.setAffineTransform(g2d.getTransform());
-        //main body
-        g.drawRect(player.getX(), player.getY(), 30, 40);
-        //turret
-        g.drawOval(player.getX()+5, player.getY()+5, 20, 20);
-        //barrel
-        g.drawRect(player.getX()+15, player.getY() - 12, 2, 18);
-
-
-
-        //return to pre transform orientation of g2d
-        g2d.setTransform(preRotate);
-
-
-
-
-
+    private void drawBullets(Graphics g) {
+        for (Bullet b : player.getBulletList())
+            b.draw(g);
     }
 
     @Override
@@ -110,7 +102,7 @@ public class Board extends JPanel implements KeyListener, ActionListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        //label.setText("kliknieto " + e.getKeyCode());
+
         player.keyPressed(e);
     }
 
@@ -124,26 +116,43 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         player.move();
-        label.setText(String.valueOf(player.getAzimuth()));
+
         updateBullets();
+        updateEnemies();
+
         checkCollisions();
-
-        //label.setText(player.getMotionDataString());
-
-
     }
 
     private void checkCollisions() {
 
-        Rectangle rLabel = label.getBounds();
+        if (player.getBounds().intersects(label3.getBounds()))
+            label3.setText("AAA DOSTALAM!");
+
 
         List<Bullet> bl = player.getBulletList();
 
         for (Bullet b : bl) {
-            Rectangle rB = b.getBounds();
+            if (b.getBounds().intersects(label3.getBounds()))
+                label3.setVisible(false);
+        }
 
-            if (rLabel.intersects(rB))
-                setBackground(Color.blue);
+
+        //old approach, causes error - index out of bounds
+//        for (int i = 0; i<bl.size(); i++)
+//            for (int j = 0; j<enemyList.size();j++) {
+//                if (bl.get(i).getBounds().intersects(enemyList.get(j).getBounds())); {
+//                    bl.remove(i);
+//                    enemyList.remove(j);
+//                }
+//            }
+
+        for (Bullet b : player.getBulletList()) {
+            for (Enemy e : enemyList) {
+                if (b.getBounds().intersects(e.getBounds())) {
+                    b.setVisible(false);
+                    e.setVisible(false);
+                }
+            }
         }
     }
 
@@ -158,6 +167,15 @@ public class Board extends JPanel implements KeyListener, ActionListener {
 
             if (!b.isVisible())
                 bulletList.remove(i);
+        }
+    }
+
+    private void updateEnemies() {
+        // here will be enemy movement logic.. soon tm
+
+        for (int i = 0; i < enemyList.size(); i++) {
+            if (!enemyList.get(i).isVisible())
+                enemyList.remove(i);
         }
     }
 }

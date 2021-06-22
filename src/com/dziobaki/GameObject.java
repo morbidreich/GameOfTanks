@@ -1,6 +1,7 @@
 package com.dziobaki;
 
 import javax.swing.*;
+import java.awt.*;
 
 public abstract class GameObject extends JComponent {
     int x;
@@ -22,4 +23,6 @@ public abstract class GameObject extends JComponent {
     public int getY() {
         return y;
     }
+
+    public abstract void draw(Graphics g);
 }

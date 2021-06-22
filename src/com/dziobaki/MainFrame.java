@@ -9,7 +9,7 @@ public class MainFrame extends JFrame {
 
         Board board = new Board();
         add(board);
-        board.start();
+
 
         //basic setup stuff
 
