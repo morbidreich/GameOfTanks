@@ -6,22 +6,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class Board extends JPanel implements Runnable, KeyListener, ActionListener {
+public class Board extends JPanel implements KeyListener, ActionListener {
 
-    JLabel label;
+    JLabel label, label2, label3;
     Player player;
-    Thread thread;
+    List<Enemy> enemyList;
+    Enemy e1;
 
     Timer timer;
     int tick = 0;
-    
-    private boolean running = false;
 
     List<GameObject> gameObjects = new ArrayList<>();
 
@@ -36,14 +33,37 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
         player = new Player(getWidth() / 2, getHeight() / 2, 10);
         add(player);
 
+        generateEnemies();
 
+
+    }
+
+    private void generateEnemies() {
+        enemyList.add(new Enemy(100, 200, 30));
+        enemyList.add(new Enemy(400, 300, 30));
+        enemyList.add(new Enemy(300, 100, 30));
+        enemyList.add(new Enemy(650, 400, 30));
+        enemyList.add(new Enemy(300, 700, 30));
+        enemyList.add(new Enemy(20, 700, 30));
+        enemyList.add(new Enemy(400, 90, 30));
+        e1 = new Enemy(200, 600, 30);
+        enemyList.add(e1);
     }
 
     private void setUi() {
         this.setSize(500, 500);
         addKeyListener(this);
+
         label = new JLabel("Trololo");
         add(label);
+
+        label2 = new JLabel("Diagnostics");
+        add(label2);
+
+        label3 = new JLabel("KURWA");
+        add(label3);
+
+        enemyList = new ArrayList<>();
 
         //without this panel is not able to listen to keyevents
         setFocusable(true);
@@ -53,71 +73,33 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        drawPlayer(g);
-        drawBullets(g);
+        //set antialiasing
+        Graphics2D g2d = (Graphics2D) g;
+        setAntialiasing(g2d);
+
+        player.draw(g2d);
+
+        drawBullets(g2d);
+
+        drawEnemies(g2d);
 
         repaint();
     }
 
-    //some fancy graphics methods
-
-    private void drawBullets(Graphics g) {
-        g.setColor(Color.red);
-
-
-        for (Bullet b : player.getBulletList()) {
-            g.drawOval(b.getX(), b.getY(), 1, 1);
-            g.drawOval(b.getX(), b.getY(), 2, 2);
-            g.drawOval(b.getX(), b.getY(), 3, 3);
-            g.drawOval(b.getX(), b.getY(), 4, 4);
-        }
+    private void setAntialiasing(Graphics2D g) {
+        g.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
+    private void drawEnemies(Graphics2D g2d) {
+        for (Enemy e : enemyList)
+            e.draw(g2d);
+    }
 
-    private void drawPlayer(Graphics g) {
-
-
-
-        Graphics2D g2d = (Graphics2D)g;
-
-        AffineTransform old = g2d.getTransform();
-
-        g2d.rotate(Math.toRadians(90));
-        //main body
-        g2d.drawRect(player.getX(), player.getY(), 30, 40);
-        //turret
-        g2d.drawOval(player.getX()+5, player.getY()+5, 20, 20);
-        //barrel
-        g2d.drawRect(player.getX()+15, player.getY() - 12, 2, 18);
-
-        g2d.setTransform(old);
-
-        //repaint();
-
-        //put your code here
-
-        /*
-        Graphics2D g2d = (Graphics2D) g;
-
-        RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-
-        g2d.setRenderingHints(rh);
-
-        Dimension size = getSize();
-        double w = size.getWidth();
-        double h = size.getHeight();
-
-        Ellipse2D e = new Ellipse2D.Double(0,0,80,130);
-        g2d.setStroke(new BasicStroke(1));
-        g2d.setColor(Color.gray);
-
-        for (double deg =0; deg <360; deg+=5) {
-            AffineTransform at = AffineTransform.getTranslateInstance(w/2, h/2);
-            at.rotate(Math.toRadians(deg));
-            g2d.draw(at.createTransformedShape(e));
-        }*/
-
+    private void drawBullets(Graphics g) {
+        for (Bullet b : player.getBulletList())
+            b.draw(g);
     }
 
     @Override
@@ -127,7 +109,7 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
 
     @Override
     public void keyPressed(KeyEvent e) {
-        //label.setText("kliknieto " + e.getKeyCode());
+
         player.keyPressed(e);
     }
 
@@ -140,26 +122,53 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
     @Override
     public void actionPerformed(ActionEvent e) {
 
-//        player.move();
-//        updateBullets();
-//        checkCollisions();
+        updatePlayer();
 
-        //label.setText(player.getMotionDataString());
+        updateBullets();
+        updateEnemies();
 
+        checkCollisions();
+        checkWinCondition();
+    }
 
+    private void updatePlayer() {
+        player.move();
+    }
+
+    private void checkWinCondition() {
+        if (enemyList.isEmpty()) {
+            Font f = new Font("Arial", 0, 50);
+            label.setFont(f);
+            label.setText("WYGRANA!");
+            label2.setVisible(false);
+            label3.setVisible(false);
+        }
     }
 
     private void checkCollisions() {
 
-        Rectangle rLabel = label.getBounds();
+        if (player.getBounds().intersects(label3.getBounds()))
+            label3.setText("AAA DOSTALAM!");
+
 
         List<Bullet> bl = player.getBulletList();
 
         for (Bullet b : bl) {
-            Rectangle rB = b.getBounds();
+            if (b.getBounds().intersects(label3.getBounds()))
+                label3.setVisible(false);
+        }
 
-            if (rLabel.intersects(rB))
-                setBackground(Color.blue);
+
+
+        for (Bullet b : player.getBulletList()) {
+            for (Enemy e : enemyList) {
+                if (b.getBounds().intersects(e.getBounds())) {
+
+                    e.receiveDamage(b);
+                    b.setVisible(false);
+
+                }
+            }
         }
     }
 
@@ -177,50 +186,17 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
         }
     }
 
-    @Override
-    public void run() {
+    private void updateEnemies() {
+        // here will be enemy movement logic.. soon tm
 
-        start();
+        for (int i = 0; i < enemyList.size(); i++) {
 
-        while(running) {
-            tick();
-            render();
+            enemyList.get(i).move();
+
+            if (enemyList.get(i).getHitPoints() <= 0)
+                enemyList.remove(i);
         }
 
-        stop();
-    }
-
-    private void tick() {
-
-        player.move();
-        updateBullets();
-        checkCollisions();
 
     }
-
-    private void render() {
-    }
-
-    public synchronized void start() {
-        if (running)
-            return;
-        running = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-    
-    public synchronized  void stop() {
-        if (!running)
-            return;
-        running = false;
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
-    
-
-
 }

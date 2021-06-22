@@ -1,17 +1,25 @@
 package com.dziobaki;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Player extends Vehicles {
 
-    int dx = 0;
-    int dy = 0;
-    List<Bullet> bulletList = new ArrayList<>();
+    int dLinear = 0;
+    int dOmega = 0;
 
-    int speed = 4;
+    double azimuth = 0;
+
+    int speed = 5;
+    int rotationSpeed = 4;
+
+    AffineTransform affineTransform;
+
+    List<Bullet> bulletList = new ArrayList<>();
 
     public Player(int x, int y, double hitPoints) {
         super(x, y, hitPoints);
@@ -23,68 +31,122 @@ public class Player extends Vehicles {
         switch (e.getKeyCode()) {
             //left arrow - move left
             case 37:
-                dx = -speed;
+                dOmega = -rotationSpeed;
                 break;
             case 38:
                 //up arrow - move up
-                dy = -speed;
+                dLinear = speed;
                 break;
-                //right arrow - move right
+            //right arrow - move right
             case 39:
-                dx = speed;
+                dOmega = rotationSpeed;
                 break;
-                //down arrow - move down
+            //down arrow - move down
             case 40:
-                dy = speed;
+                dLinear = -speed;
                 break;
             //spacebar - fire bullet
             case 32:
-                bulletList.add(new Bullet(x+14,y-8));
+                fireWeapon();
                 break;
         }
+    }
+
+    private void fireWeapon() {
+        bulletList.add(calculateNewBullet());
+    }
+
+    private Bullet calculateNewBullet() {
+
+        //calculate new starting point given rotation of vehicle
+        //previously tried to do that using Graphics.getAffineTransform() (hence setAffineTransform method below)
+        //but apparently im too stupid to understand how to use that lol
+        double a = Math.toRadians(azimuth);
+
+        //calculate coordinates of middle of vehicle
+        double newX = x + 16;
+        double newY = y + 18;
+
+        //rotate around middle of vehicle
+        newX += 28 * Math.sin(a);
+        newY -= 28 * Math.cos(a);
+
+
+        return new Bullet((int)newX, (int)newY, azimuth);
+
+
     }
 
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case 37, 39:
-                dx = 0;
+                dOmega = 0;
                 break;
             case 38, 40:
-                dy = 0;
+                dLinear = 0;
                 break;
         }
     }
 
     public void move() {
-        x += dx;
-        y += dy;
+
+        //calculate lateral motion
+        x += dLinear * Math.sin(Math.toRadians(azimuth));
+        y -= dLinear * Math.cos(Math.toRadians(azimuth));
+
+
+        //calculate angular motion
+        //temp variable to handle passing through 0/360 degrees
+        double tempAzimuth = azimuth;
+        tempAzimuth += dOmega;
+        if (tempAzimuth > 360)
+            azimuth = tempAzimuth - 360;
+        else if (tempAzimuth < 0)
+            azimuth = tempAzimuth + 360;
+        else
+            azimuth += dOmega;
     }
 
-    @Override
-    public void receiveDamage(double hit) {
+    public void draw(Graphics g) {
+        //cast g to g2d for transformation godness
+        Graphics2D g2d = (Graphics2D) g;
 
-    }
+        //remeber correct orientation
+        AffineTransform preRotate = g2d.getTransform();
 
-    public int getDx() {
-        return dx;
-    }
 
-    public int getDy() {
-        return dy;
-    }
+        //rotate tank around main body
+        g2d.rotate(Math.toRadians(this.azimuth), this.getX() + 15, this.getY() + 20);
+        //pass AffineTransport to player object for clculating starting point of bullets as getShearX/Y
+        this.setAffineTransform(g2d.getTransform());
+        //main body
+        g.drawRect(this.getX(), this.getY(), 30, 40);
+        //turret
+        g.drawOval(this.getX() + 5, this.getY() + 5, 20, 20);
+        //barrel
+        g.drawRect(this.getX() + 14, this.getY() - 12, 2, 18);
 
-    public int getSpeed() {
-        return speed;
+
+        //return to pre transform orientation of g2d
+        g2d.setTransform(preRotate);
     }
 
     public List<Bullet> getBulletList() {
         return bulletList;
     }
 
-    //returns all data regarding move parameters of object
-    public String getMotionDataString() {
-        return "Current XY: " + x + " " + y + "\n" +
-                "Currend dx dy: " + dx + " " + dy + "\n" +
-                "Current speed: " + speed;
+
+    public double getAzimuth() {
+        return azimuth;
+    }
+
+    public void setAffineTransform(AffineTransform affineTransform) {
+        this.affineTransform = affineTransform;
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        return new Rectangle(this.getX(), this.getY(), 30, 40);
+
     }
 }

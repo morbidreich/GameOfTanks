@@ -9,14 +9,14 @@ public class MainFrame extends JFrame {
 
         Board board = new Board();
         add(board);
-        board.start();
+
 
         //basic setup stuff
 
         setTitle("GameOfTanks");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocation(200,200);
-        setSize(500,500);
+        setSize(800,700);
         setVisible(true);
     }
 
