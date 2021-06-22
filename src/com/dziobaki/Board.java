@@ -12,16 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Board extends JPanel implements Runnable, KeyListener, ActionListener {
+public class Board extends JPanel implements KeyListener, ActionListener {
 
     JLabel label;
     Player player;
-    Thread thread;
 
     Timer timer;
     int tick = 0;
-    
-    private boolean running = false;
 
     List<GameObject> gameObjects = new ArrayList<>();
 
@@ -76,47 +73,33 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
 
     private void drawPlayer(Graphics g) {
 
-
-
-        Graphics2D g2d = (Graphics2D)g;
-
-        AffineTransform old = g2d.getTransform();
-
-        g2d.rotate(Math.toRadians(90));
-        //main body
-        g2d.drawRect(player.getX(), player.getY(), 30, 40);
-        //turret
-        g2d.drawOval(player.getX()+5, player.getY()+5, 20, 20);
-        //barrel
-        g2d.drawRect(player.getX()+15, player.getY() - 12, 2, 18);
-
-        g2d.setTransform(old);
-
-        //repaint();
-
-        //put your code here
-
-        /*
+        //cast g to g2d for transformation godness
         Graphics2D g2d = (Graphics2D) g;
 
-        RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        rh.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        //remeber correct orientation
+        AffineTransform preRotate = g2d.getTransform();
 
-        g2d.setRenderingHints(rh);
 
-        Dimension size = getSize();
-        double w = size.getWidth();
-        double h = size.getHeight();
 
-        Ellipse2D e = new Ellipse2D.Double(0,0,80,130);
-        g2d.setStroke(new BasicStroke(1));
-        g2d.setColor(Color.gray);
+        //rotate tank around main body
+        g2d.rotate(Math.toRadians(player.azimuth), player.getX() + 15, player.getY() + 20);
+        //pass AffineTransport to player object for clculating starting point of bullets as getShearX/Y
+        player.setAffineTransform(g2d.getTransform());
+        //main body
+        g.drawRect(player.getX(), player.getY(), 30, 40);
+        //turret
+        g.drawOval(player.getX()+5, player.getY()+5, 20, 20);
+        //barrel
+        g.drawRect(player.getX()+15, player.getY() - 12, 2, 18);
 
-        for (double deg =0; deg <360; deg+=5) {
-            AffineTransform at = AffineTransform.getTranslateInstance(w/2, h/2);
-            at.rotate(Math.toRadians(deg));
-            g2d.draw(at.createTransformedShape(e));
-        }*/
+
+
+        //return to pre transform orientation of g2d
+        g2d.setTransform(preRotate);
+
+
+
+
 
     }
 
@@ -140,9 +123,10 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
     @Override
     public void actionPerformed(ActionEvent e) {
 
-//        player.move();
-//        updateBullets();
-//        checkCollisions();
+        player.move();
+        label.setText(String.valueOf(player.getAzimuth()));
+        updateBullets();
+        checkCollisions();
 
         //label.setText(player.getMotionDataString());
 
@@ -176,51 +160,4 @@ public class Board extends JPanel implements Runnable, KeyListener, ActionListen
                 bulletList.remove(i);
         }
     }
-
-    @Override
-    public void run() {
-
-        start();
-
-        while(running) {
-            tick();
-            render();
-        }
-
-        stop();
-    }
-
-    private void tick() {
-
-        player.move();
-        updateBullets();
-        checkCollisions();
-
-    }
-
-    private void render() {
-    }
-
-    public synchronized void start() {
-        if (running)
-            return;
-        running = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-    
-    public synchronized  void stop() {
-        if (!running)
-            return;
-        running = false;
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
-    
-
-
 }
