@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +18,15 @@ public class Player extends Vehicles {
     int speed = 5;
     int rotationSpeed = 4;
 
+    public BufferedImage tankImage;
     AffineTransform affineTransform;
 
     List<Bullet> bulletList = new ArrayList<>();
 
     public Player(int x, int y, double hitPoints) {
         super(x, y, hitPoints);
+
+        tankImage = ImageLoader.loadImage("/textures/tank.png");
     }
 
     public void keyPressed(KeyEvent e) {
@@ -115,16 +119,20 @@ public class Player extends Vehicles {
         AffineTransform preRotate = g2d.getTransform();
 
 
-        //rotate tank around main body
+
+
+        //rotate tank around centre main body
         g2d.rotate(Math.toRadians(this.azimuth), this.getX() + 15, this.getY() + 20);
+
+        g.drawImage(tankImage, x, y,null);
         //pass AffineTransport to player object for clculating starting point of bullets as getShearX/Y
         this.setAffineTransform(g2d.getTransform());
         //main body
-        g.drawRect(this.getX(), this.getY(), 30, 40);
+        //g.drawRect(this.getX(), this.getY(), 30, 40);
         //turret
-        g.drawOval(this.getX() + 5, this.getY() + 5, 20, 20);
+        //g.drawOval(this.getX() + 5, this.getY() + 5, 20, 20);
         //barrel
-        g.drawRect(this.getX() + 14, this.getY() - 12, 2, 18);
+        //g.drawRect(this.getX() + 14, this.getY() - 12, 2, 18);
 
 
         //return to pre transform orientation of g2d
