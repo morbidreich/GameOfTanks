@@ -2,16 +2,23 @@ package com.dziobaki;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Player extends Vehicles {
 
-    int dx = 0;
-    int dy = 0;
-    List<Bullet> bulletList = new ArrayList<>();
+    int dLinear = 0;
+    int dOmega = 0;
 
-    int speed = 4;
+    double azimuth = 0;
+
+    int speed = 5;
+    int rotationSpeed = 4;
+
+    AffineTransform affineTransform;
+
+    List<Bullet> bulletList = new ArrayList<>();
 
     public Player(int x, int y, double hitPoints) {
         super(x, y, hitPoints);
@@ -23,41 +30,60 @@ public class Player extends Vehicles {
         switch (e.getKeyCode()) {
             //left arrow - move left
             case 37:
-                dx = -speed;
+                dOmega = -rotationSpeed;
                 break;
             case 38:
                 //up arrow - move up
-                dy = -speed;
+                dLinear = speed;
                 break;
-                //right arrow - move right
+            //right arrow - move right
             case 39:
-                dx = speed;
+                dOmega = rotationSpeed;
                 break;
-                //down arrow - move down
+            //down arrow - move down
             case 40:
-                dy = speed;
+                dLinear = -speed;
                 break;
             //spacebar - fire bullet
             case 32:
-                bulletList.add(new Bullet(x+14,y-8));
+                bulletList.add(calculateNewBullet());
                 break;
         }
+    }
+
+    private Bullet calculateNewBullet() {
+        return new Bullet(x + 14, y - 6, azimuth);
+
+
     }
 
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case 37, 39:
-                dx = 0;
+                dOmega = 0;
                 break;
             case 38, 40:
-                dy = 0;
+                dLinear = 0;
                 break;
         }
     }
 
     public void move() {
-        x += dx;
-        y += dy;
+        //calculate lateral motion
+
+        x += dLinear * Math.sin(Math.toRadians(azimuth));
+        y -= dLinear * Math.cos(Math.toRadians(azimuth));
+
+
+        //calculate angular motion
+        double tempAzimuth = azimuth;
+        tempAzimuth += dOmega;
+        if (tempAzimuth > 360)
+            azimuth = tempAzimuth - 360;
+        else if (tempAzimuth < 0)
+            azimuth = tempAzimuth + 360;
+        else
+            azimuth += dOmega;
     }
 
     @Override
@@ -65,26 +91,16 @@ public class Player extends Vehicles {
 
     }
 
-    public int getDx() {
-        return dx;
-    }
-
-    public int getDy() {
-        return dy;
-    }
-
-    public int getSpeed() {
-        return speed;
-    }
-
     public List<Bullet> getBulletList() {
         return bulletList;
     }
 
-    //returns all data regarding move parameters of object
-    public String getMotionDataString() {
-        return "Current XY: " + x + " " + y + "\n" +
-                "Currend dx dy: " + dx + " " + dy + "\n" +
-                "Current speed: " + speed;
+
+    public double getAzimuth() {
+        return azimuth;
+    }
+
+    public void setAffineTransform(AffineTransform affineTransform) {
+        this.affineTransform = affineTransform;
     }
 }
