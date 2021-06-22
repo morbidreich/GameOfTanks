@@ -1,6 +1,7 @@
 package com.dziobaki;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class Enemy extends Vehicles {
@@ -9,9 +10,11 @@ public class Enemy extends Vehicles {
     double azimuth = 0;
     int movementSpeed = 1;
 
+    BufferedImage enemyImage;
 
     public Enemy(int x, int y, double hitPoints) {
         super(x, y, hitPoints);
+        enemyImage = ImageLoader.loadImage("/textures/enemy1.png");
     }
 
     @Override
@@ -60,7 +63,8 @@ public class Enemy extends Vehicles {
         Color old = g.getColor();
         //set new color
         g.setColor(Color.DARK_GRAY);
-        g.fillRect(x-15, y-15, 30, 30);
+        g.drawRect(x-15, y-15, 30, 30);
+        g.drawImage(enemyImage, x-15,y-15,null);
 
         drawHealthBar(g);
 

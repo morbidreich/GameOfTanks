@@ -40,7 +40,7 @@ public class Bullet extends Projectile {
 
         Random r = new Random();
         //modifier is random value between -3 and 3
-        double modifier = Math.sin(Math.toRadians(r.nextDouble() * 360)) * 3;
+        double modifier = (r.nextDouble() * 6) - 3;
         return damage + modifier;
     }
 

@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,10 +17,14 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     JLabel label, label2, label3;
     Player player;
     List<Enemy> enemyList;
-    Enemy e1;
+
+    private BufferedImage myTank, background;
 
     Timer timer;
     int tick = 0;
+
+    private BufferStrategy bs;
+    private Graphics g;
 
     List<GameObject> gameObjects = new ArrayList<>();
 
@@ -27,15 +33,15 @@ public class Board extends JPanel implements KeyListener, ActionListener {
 
         setUi();
 
-        timer = new Timer(20, this);
-        timer.start();
-
+        background = ImageLoader.loadImage("/textures/dirt.jpg");
         player = new Player(getWidth() / 2, getHeight() / 2, 10);
+
         add(player);
 
         generateEnemies();
 
-
+        timer = new Timer(20, this);
+        timer.start();
     }
 
     private void generateEnemies() {
@@ -46,8 +52,7 @@ public class Board extends JPanel implements KeyListener, ActionListener {
         enemyList.add(new Enemy(300, 700, 30));
         enemyList.add(new Enemy(20, 700, 30));
         enemyList.add(new Enemy(400, 90, 30));
-        e1 = new Enemy(200, 600, 30);
-        enemyList.add(e1);
+
     }
 
     private void setUi() {
@@ -72,6 +77,7 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        g.drawImage(background,0,0,null);
 
         //set antialiasing
         Graphics2D g2d = (Graphics2D) g;

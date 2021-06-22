@@ -4,12 +4,10 @@ import javax.swing.*;
 
 public class MainFrame extends JFrame {
 
-
     public MainFrame() {
 
         Board board = new Board();
         add(board);
-
 
         //basic setup stuff
 
