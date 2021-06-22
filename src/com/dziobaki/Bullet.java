@@ -2,10 +2,11 @@ package com.dziobaki;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Random;
 
-public class Bullet extends GameObject {
+public class Bullet extends Projectile {
 
-    int speed = 7;
+    int speed = 10;
     double azimuth;
 
     double damage = 15;
@@ -35,7 +36,16 @@ public class Bullet extends GameObject {
     }
 
     @Override
+    public double getDamage() {
+
+        Random r = new Random();
+        //modifier is random value between -3 and 3
+        double modifier = Math.sin(Math.toRadians(r.nextDouble() * 360)) * 3;
+        return damage + modifier;
+    }
+
+    @Override
     public Rectangle getBounds() {
-        return new Rectangle(x, y, 4,4);
+        return new Rectangle(x-2, y-2, 4,4);
     }
 }

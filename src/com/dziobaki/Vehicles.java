@@ -11,12 +11,15 @@ public abstract class Vehicles extends GameObject {
         this.hitPoints = hitPoints;
     }
 
-    @Override
-    public void move() {
+    public abstract void move();
 
+    public void receiveDamage(Projectile projectile) {
+        this.hitPoints -= projectile.getDamage();
     }
 
-    public abstract void receiveDamage(double hit);
+    public double getHitPoints() {
+        return this.hitPoints;
+    }
 
 
 }

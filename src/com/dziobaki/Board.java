@@ -15,6 +15,7 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     JLabel label, label2, label3;
     Player player;
     List<Enemy> enemyList;
+    Enemy e1;
 
     Timer timer;
     int tick = 0;
@@ -41,6 +42,12 @@ public class Board extends JPanel implements KeyListener, ActionListener {
         enemyList.add(new Enemy(100, 200, 30));
         enemyList.add(new Enemy(400, 300, 30));
         enemyList.add(new Enemy(300, 100, 30));
+        enemyList.add(new Enemy(650, 400, 30));
+        enemyList.add(new Enemy(300, 700, 30));
+        enemyList.add(new Enemy(20, 700, 30));
+        enemyList.add(new Enemy(400, 90, 30));
+        e1 = new Enemy(200, 600, 30);
+        enemyList.add(e1);
     }
 
     private void setUi() {
@@ -115,12 +122,27 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        player.move();
+        updatePlayer();
 
         updateBullets();
         updateEnemies();
 
         checkCollisions();
+        checkWinCondition();
+    }
+
+    private void updatePlayer() {
+        player.move();
+    }
+
+    private void checkWinCondition() {
+        if (enemyList.isEmpty()) {
+            Font f = new Font("Arial", 0, 50);
+            label.setFont(f);
+            label.setText("WYGRANA!");
+            label2.setVisible(false);
+            label3.setVisible(false);
+        }
     }
 
     private void checkCollisions() {
@@ -137,20 +159,14 @@ public class Board extends JPanel implements KeyListener, ActionListener {
         }
 
 
-        //old approach, causes error - index out of bounds
-//        for (int i = 0; i<bl.size(); i++)
-//            for (int j = 0; j<enemyList.size();j++) {
-//                if (bl.get(i).getBounds().intersects(enemyList.get(j).getBounds())); {
-//                    bl.remove(i);
-//                    enemyList.remove(j);
-//                }
-//            }
 
         for (Bullet b : player.getBulletList()) {
             for (Enemy e : enemyList) {
                 if (b.getBounds().intersects(e.getBounds())) {
+
+                    e.receiveDamage(b);
                     b.setVisible(false);
-                    e.setVisible(false);
+
                 }
             }
         }
@@ -174,8 +190,13 @@ public class Board extends JPanel implements KeyListener, ActionListener {
         // here will be enemy movement logic.. soon tm
 
         for (int i = 0; i < enemyList.size(); i++) {
-            if (!enemyList.get(i).isVisible())
+
+            enemyList.get(i).move();
+
+            if (enemyList.get(i).getHitPoints() <= 0)
                 enemyList.remove(i);
         }
+
+
     }
 }
