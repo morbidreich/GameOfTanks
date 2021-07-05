@@ -9,7 +9,6 @@ public class Enemy extends Vehicles {
     int moveIntent = 0;
     double azimuth = 0;
     int movementSpeed = 1;
-
     BufferedImage enemyImage;
 
     public Enemy(int x, int y, double hitPoints) {
