@@ -1,2 +1,2 @@
 # GameOfTanks
-recreating game that have been made millions of times. Java graphics training.
+Recreating game that have been made millions of times. Core Java training.
