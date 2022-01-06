@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,10 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     Player player;
     List<Enemy> enemyList;
 
+    // container for objects other than player, bullets and enemies,
+    // for now only to contain floating damage indicators
+    List<GameObject> otherObjects;
+
     private BufferedImage myTank, background;
 
     Timer timer;
@@ -26,7 +31,6 @@ public class Board extends JPanel implements KeyListener, ActionListener {
     private BufferStrategy bs;
     private Graphics g;
 
-    List<GameObject> gameObjects = new ArrayList<>();
 
     //main game surface
     public Board() {
@@ -59,16 +63,17 @@ public class Board extends JPanel implements KeyListener, ActionListener {
         this.setSize(500, 500);
         addKeyListener(this);
 
-        label = new JLabel("Trololo");
+        label = new JLabel("Test");
         add(label);
 
         label2 = new JLabel("Diagnostics");
         add(label2);
 
-        label3 = new JLabel("KURWA");
+        label3 = new JLabel("XXX");
         add(label3);
 
         enemyList = new ArrayList<>();
+        otherObjects = new ArrayList<>();
 
         //without this panel is not able to listen to keyevents
         setFocusable(true);
@@ -89,7 +94,15 @@ public class Board extends JPanel implements KeyListener, ActionListener {
 
         drawEnemies(g2d);
 
+        drawOtherEntities(g2d);
+
         repaint();
+    }
+
+    private void drawOtherEntities(Graphics2D g2d) {
+        for (GameObject go : otherObjects)
+            go.draw(g2d);
+
     }
 
     private void setAntialiasing(Graphics2D g) {
@@ -132,9 +145,21 @@ public class Board extends JPanel implements KeyListener, ActionListener {
 
         updateBullets();
         updateEnemies();
+        updateOtherObjects();
 
         checkCollisions();
         checkWinCondition();
+    }
+
+    private void updateOtherObjects() {
+        for (GameObject gameObject : otherObjects) {
+            if (gameObject instanceof DamageIndicator) {
+
+                gameObject.move();
+
+            }
+
+        }
     }
 
     private void updatePlayer() {
@@ -166,12 +191,16 @@ public class Board extends JPanel implements KeyListener, ActionListener {
 
 
 
-        for (Bullet b : player.getBulletList()) {
-            for (Enemy e : enemyList) {
-                if (b.getBounds().intersects(e.getBounds())) {
+        for (Bullet bullet : player.getBulletList()) {
+            for (Enemy enemy : enemyList) {
+                if (bullet.getBounds().intersects(enemy.getBounds())) {
 
-                    e.receiveDamage(b);
-                    b.setVisible(false);
+                    enemy.receiveDamage(bullet);
+
+                    //generate floating damage indicator
+                    otherObjects.add(new DamageIndicator(enemy.getX(), enemy.getY(), bullet.getDamage()));
+
+                    bullet.setVisible(false);
 
                 }
             }

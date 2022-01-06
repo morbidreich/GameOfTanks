@@ -14,6 +14,13 @@ public class Bullet extends Projectile {
     public Bullet(int x, int y, double azimuth) {
         super(x, y);
         this.azimuth = azimuth;
+
+        // add some variancy to damage value, varies between each instance of bullet
+        // TODO move that code to Projectile class
+        Random r = new Random();
+        //modifier is random value between -3 and 3
+        double modifier = (r.nextDouble() * 6) - 3;
+        damage = damage + modifier;
     }
 
     @Override
@@ -37,11 +44,7 @@ public class Bullet extends Projectile {
 
     @Override
     public double getDamage() {
-
-        Random r = new Random();
-        //modifier is random value between -3 and 3
-        double modifier = (r.nextDouble() * 6) - 3;
-        return damage + modifier;
+        return damage;
     }
 
     @Override
