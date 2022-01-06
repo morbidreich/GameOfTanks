@@ -38,6 +38,7 @@ public class Enemy extends Vehicles {
         if (moveIntent <= 0) {
             Random r = new Random();
             moveIntent = r.nextInt(400) - 200; //thats my movement length
+
             azimuth = r.nextDouble() * 359; //thats my movement direction
             movementSpeed = r.nextInt(2) - 1;
         }

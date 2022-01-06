@@ -63,13 +63,13 @@ public class Board extends JPanel implements KeyListener, ActionListener {
         this.setSize(500, 500);
         addKeyListener(this);
 
-        label = new JLabel("Trololo");
+        label = new JLabel("Test");
         add(label);
 
         label2 = new JLabel("Diagnostics");
         add(label2);
 
-        label3 = new JLabel("KURWA");
+        label3 = new JLabel("XXX");
         add(label3);
 
         enemyList = new ArrayList<>();
